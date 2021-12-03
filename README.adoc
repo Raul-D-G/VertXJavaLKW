@@ -16,9 +16,10 @@ To package your application:
 ./mvnw clean package
 ```
 
-To run your application:
+To run your application:DEV
 ```
-./mvnw clean compile exec:java
+./mvnw clean compile exec:java&
+
 ```
 
 == Help
