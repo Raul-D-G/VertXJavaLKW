@@ -22,39 +22,6 @@ public class MainVerticle extends AbstractVerticle {
       .compose(this::storeConfig)
       .compose(this::deployOtherVerticles)
       .onComplete(startPromise);
-
-//    Route handler1 = router
-//            .get("/transporturi")
-//            .handler(TransporturiController::getTransporturi);
-
-    // Mount the handler for all incoming requests at every path and HTTP method
-//    router.route().handler(context -> {
-//      // Get the address of the request
-//      String address = context.request().connection().remoteAddress().toString();
-//      // Get the query parameter "name"
-//      MultiMap queryParams = context.queryParams();
-//      String name = queryParams.contains("name") ? queryParams.get("name") : "unknown";
-//      // Write a json response
-//      context.json(
-//        new JsonObject()
-//          .put("name", name)
-//          .put("address", address)
-//          .put("message", "Hello " + name + " connected from " + address)
-//      );
-//    });
-    // Create the HTTP server
-//    vertx.createHttpServer()
-//      // Handle every request using the router
-//      .requestHandler(router)
-//      // Start listening
-//      .listen(8888)
-//      // Print the port
-//      .onSuccess(server ->
-//        System.out.println(
-//          "HTTP server started on port " + server.actualPort()
-//        )
-//      );
-
   }
 
   /**
@@ -78,11 +45,15 @@ public class MainVerticle extends AbstractVerticle {
     return Future.future(cfgRetriever::getConfig);
   }
 
+  /**
+   * Store loaded configuration for use in subsequent operations
+   * @param config The configuration loaded via Vert.x Config
+   * @return A {@link Future} of type {@link Void} indication the success or failure of this operation
+   */
   Future<Void> storeConfig(JsonObject config) {
     Promise<Void> promise = Promise.promise();
     loadedConfig.mergeIn(config);
     promise.complete();
-
     return promise.future();
   }
 
@@ -97,15 +68,10 @@ public class MainVerticle extends AbstractVerticle {
     v1Promise.complete();
     DeploymentOptions opts = new DeploymentOptions().setConfig(loadedConfig);
 
-//    Future<String> dbVerticle = Future.future(promise -> vertx.deployVerticle(new DatabaseVerticle(), opts, promise));
+    Future<String> dbVerticle = Future.future(promise -> vertx.deployVerticle(new DatabaseVerticle(), opts, promise));
     Future<String> webVerticle = Future.future(promise -> vertx.deployVerticle(new WebVerticle(), opts, promise));
 
-    return CompositeFuture.all(webVerticle, v1Promise.future()).mapEmpty();
+    return CompositeFuture.all(webVerticle, dbVerticle).mapEmpty();
   }
 
-//  @Override
-//  public void stop(Promise<Void> stopPromise) throws Exception {
-//    vertx.close();
-//    System.out.println("stopping...");
-//  }
 }
