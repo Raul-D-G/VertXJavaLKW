@@ -25,7 +25,9 @@ public class DatabaseVerticle extends AbstractVerticle {
 
   private static final String LIST_ALL_TRANSPORTURI = "SELECT * FROM transporturi ORDER BY pret ASC";
   private static final String GET_TRANSPORT_BY_ID = "SELECT * FROM transporturi WHERE id = ?";
-  private static final String UPDATE_TRANSPORT = "UPDATE transporturi SET title = ?, description = ?, due_date = ?, complete = ? WHERE id = ? RETURNING *";
+  private static final String UPDATE_TRANSPORT = "UPDATE public.transporturi\n" +
+    "\tSET \"idExpeditor\"=?, \"tipMarfa\"=?, \"taraIncarcare\"=?, \"orasIncarcare\"=?, \"taraDescarcare\"=?, \"orasDescarcare\"=?, pret=?, km=?\n" +
+    "\tWHERE id = ? RETURNING *";
   private static final String ADD_TRANSPORT = "INSERT INTO public.transporturi(\n" +
     "\t\"idExpeditor\", \"tipMarfa\", \"taraIncarcare\", \"orasIncarcare\", \"taraDescarcare\", \"orasDescarcare\", pret, km)\n" +
     "\tVALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *";
@@ -54,14 +56,14 @@ public class DatabaseVerticle extends AbstractVerticle {
       JsonObject transport = (JsonObject)msg.body();
       JsonArray params = new JsonArray()
         .add(transport.getInteger("idExpeditor"))
-        .add(transport.getString("tipMarfa", ""))
-        .add(transport.getString("taraIncarcare", ""))
-        .add(transport.getString("orasIncarcare", ""))
-        .add(transport.getString("taraDescarcare", ""))
-        .add(transport.getString("orasDescarcare", ""))
+        .add(transport.getString("tipMarfa"))
+        .add(transport.getString("taraIncarcare"))
+        .add(transport.getString("orasIncarcare"))
+        .add(transport.getString("taraDescarcare"))
+        .add(transport.getString("orasDescarcare"))
         .add(transport.getFloat("pret"))
         .add(transport.getFloat("km"))
-        .add(transport.getString("id"));
+        .add(transport.getInteger("id"));
       Future.<SQLConnection>future(client::getConnection)
         .compose(conn -> this.queryWithParamters(conn, UPDATE_TRANSPORT, params))
         .compose(this::mapToFirstResult)

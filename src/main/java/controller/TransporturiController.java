@@ -26,6 +26,7 @@ public class TransporturiController implements TransporturiHandler {
     router.get("/:id/").handler(this::getTransport);
     router.post().handler(this::inregistrareTransport);
     router.get().handler(this::toateTransporturile);
+    router.put().handler(this::updateTransport);
   }
 
 
@@ -94,5 +95,22 @@ public class TransporturiController implements TransporturiHandler {
       }
     });
 
+  }
+
+  private void updateTransport(RoutingContext context) {
+    DeliveryOptions options = new DeliveryOptions();
+
+    vertx.eventBus().request(UPDATE_TRANSPORT_ADDR, context.getBodyAsJson(), options, reply -> {
+      if (reply.succeeded()) {
+
+        context.json(
+          new JsonObject()
+            .put("resursaModificta", reply.result().body())
+        );
+
+      } else {
+        context.fail(reply.cause());
+      }
+    });
   }
 }
