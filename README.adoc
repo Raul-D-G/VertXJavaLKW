@@ -29,7 +29,11 @@ To run your application:DEV
 * https://groups.google.com/forum/?fromgroups#!forum/vertx[Vert.x User Group]
 * https://gitter.im/eclipse-vertx/vertx-users[Vert.x Gitter]
 
-image:https://github.com/Raul-D-G/VertXJavaLKW/blob/master/img/GET_ID.jpg[link="https://github.com/Raul-D-G/VertXJavaLKW/blob/master/img/GET_ID.jpg"]{ width: 200px; }
+get transport by id
+image:https://github.com/Raul-D-G/VertXJavaLKW/blob/master/img/GET_ID.jpg[link="https://github.com/Raul-D-G/VertXJavaLKW/blob/master/img/GET_ID.jpg"]
+get all transports
 image:https://github.com/Raul-D-G/VertXJavaLKW/blob/master/img/GET_ALL.jpg[link="https://github.com/Raul-D-G/VertXJavaLKW/blob/master/img/GET_ALL.jpg"]
+add transport
 image:https://github.com/Raul-D-G/VertXJavaLKW/blob/master/img/POST.jpg[link="https://github.com/Raul-D-G/VertXJavaLKW/blob/master/img/POST.jpg"]
+update transport
 image:https://github.com/Raul-D-G/VertXJavaLKW/blob/master/img/UPDATE.jpg[link="https://github.com/Raul-D-G/VertXJavaLKW/blob/master/img/UPDATE.jpg"]
