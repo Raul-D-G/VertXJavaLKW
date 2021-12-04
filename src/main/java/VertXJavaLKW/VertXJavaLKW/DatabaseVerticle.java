@@ -11,6 +11,10 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
+import io.vertx.jdbcclient.JDBCConnectOptions;
+import io.vertx.jdbcclient.JDBCPool;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Row;
 
 public class DatabaseVerticle extends AbstractVerticle {
 
@@ -19,10 +23,12 @@ public class DatabaseVerticle extends AbstractVerticle {
   public static final String GET_TRANSPORT_BY_ID_ADDR = "VertXJavaLKW.VertXJavaLKW.get_transport_by_id";
   public static final String UPDATE_TRANSPORT_ADDR = "VertXJavaLKW.VertXJavaLKW.update_transport";
 
-  private static final String LIST_ALL_TRANSPORTURI = "SELECT * FROM transporturi ORDER BY created ASC";
+  private static final String LIST_ALL_TRANSPORTURI = "SELECT * FROM transporturi ORDER BY pret ASC";
   private static final String GET_TRANSPORT_BY_ID = "SELECT * FROM transporturi WHERE id = ?";
   private static final String UPDATE_TRANSPORT = "UPDATE transporturi SET title = ?, description = ?, due_date = ?, complete = ? WHERE id = ? RETURNING *";
-  private static final String ADD_TRANSPORT = "INSERT INTO transporturi (title, description, due_date, complete) VALUES (?, ?, ?, ?) RETURNING *";
+  private static final String ADD_TRANSPORT = "INSERT INTO public.transporturi(\n" +
+    "\t\"idExpeditor\", \"tipMarfa\", \"taraIncarcare\", \"orasIncarcare\", \"taraDescarcare\", \"orasDescarcare\", pret, km)\n" +
+    "\tVALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *";
 
   SQLClient client;
 
@@ -74,16 +80,19 @@ public class DatabaseVerticle extends AbstractVerticle {
   void addTransport(Message<Object> msg) {
     if (msg.body() instanceof JsonObject) {
       JsonObject transport = (JsonObject)msg.body();
+
       if (transport.containsKey("idExpeditor")) {
         JsonArray params = new JsonArray()
           .add(transport.getInteger("idExpeditor"))
-          .add(transport.getString("tipMarfa", ""))
-          .add(transport.getString("taraIncarcare", ""))
-          .add(transport.getString("orasIncarcare", ""))
-          .add(transport.getString("taraDescarcare", ""))
-          .add(transport.getString("orasDescarcare", ""))
+          .add(transport.getString("tipMarfa"))
+          .add(transport.getString("taraIncarcare"))
+          .add(transport.getString("orasIncarcare"))
+          .add(transport.getString("taraDescarcare"))
+          .add(transport.getString("orasDescarcare"))
           .add(transport.getFloat("pret"))
           .add(transport.getFloat("km"));
+
+
         Future.<SQLConnection>future(client::getConnection)
           .compose(conn -> this.queryWithParamters(conn, ADD_TRANSPORT, params))
           .compose(this::mapToFirstResult)
@@ -104,7 +113,7 @@ public class DatabaseVerticle extends AbstractVerticle {
 
   void getTransportById(Message<Object> msg) {
     if (msg.body() instanceof String) {
-      String id = (String)msg.body();
+      Integer id = Integer.parseInt((String) msg.body());
       JsonArray params = new JsonArray().add(id);
       Future.<SQLConnection>future(client::getConnection)
         .compose(conn -> this.queryWithParamters(conn, GET_TRANSPORT_BY_ID, params))
@@ -136,7 +145,6 @@ public class DatabaseVerticle extends AbstractVerticle {
 
   Future<Void> configureSqlClient() {
     Promise<Void> promise = Promise.promise();
-    System.out.println(config().getJsonObject("db"));
     client = JDBCClient.createShared(vertx, config().getJsonObject("db"));
     promise.complete();
     return promise.future();

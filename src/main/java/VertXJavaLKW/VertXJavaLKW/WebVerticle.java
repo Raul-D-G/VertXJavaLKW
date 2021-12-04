@@ -7,14 +7,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.CSRFHandler;
-import io.vertx.ext.web.handler.CorsHandler;
-import io.vertx.ext.web.handler.LoggerHandler;
-import io.vertx.ext.web.handler.SessionHandler;
-import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.ext.web.sstore.LocalSessionStore;
-import io.vertx.ext.web.sstore.SessionStore;
+import io.vertx.ext.web.handler.BodyHandler;
 
 public class WebVerticle extends AbstractVerticle {
 
@@ -33,6 +26,7 @@ public class WebVerticle extends AbstractVerticle {
   Future<Router> configureRouter() {
     Promise<Router> promise = Promise.promise();
     Router router = Router.router(vertx);
+    router.route().handler(BodyHandler.create());
 
     router
       .route("/transporturi/*")
@@ -51,7 +45,6 @@ public class WebVerticle extends AbstractVerticle {
     int httpPort = http.getInteger("port");
     HttpServer server = vertx.createHttpServer().requestHandler(router);
     System.out.println("Server starter on port " + httpPort);
-    System.out.println(server);
     return Future.<HttpServer>future(promise -> server.listen(httpPort, promise)).mapEmpty();
   }
 

@@ -6,6 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -34,18 +35,64 @@ public class TransporturiController implements TransporturiHandler {
   }
 
   private void getTransport(RoutingContext context) {
+    DeliveryOptions options = new DeliveryOptions();
+    MultiMap queryParams = context.queryParams();
+    String id = queryParams.contains("id") ? queryParams.get("id") : null;
 
-    //Option A: do you business logic here
+    vertx.eventBus().request(GET_TRANSPORT_BY_ID_ADDR, id, options, reply -> {
+      if (reply.succeeded()) {
+
+        JsonObject body = (JsonObject) reply.result().body();
+
+        context.json(body);
+
+      } else {
+        context.fail(reply.cause());
+      }
+    });
+
   }
 
   private void inregistrareTransport(RoutingContext context) {
+    DeliveryOptions options = new DeliveryOptions();
+
+    vertx.eventBus().request(ADD_TRANSPORT_ADD, context.getBodyAsJson(), options, reply -> {
+      if (reply.succeeded()) {
+
+        context.json(
+          new JsonObject()
+            .put("resursaAdaugata", reply.result().body())
+        );
+
+      } else {
+        context.fail(reply.cause());
+      }
+    });
 
   }
 
   private void toateTransporturile(RoutingContext context) {
+    DeliveryOptions options = new DeliveryOptions();
+    JsonObject message = new JsonObject();
+    vertx.eventBus().request(LIST_ALL_TRANSPORTURI_ADDR, message, options, reply -> {
+      if (reply.succeeded()) {
+        // The data from the db
+        JsonArray body = (JsonArray) reply.result().body();
 
+//        context.response()
+//          .setChunked(true)
+//          .setStatusCode(200)
+//          .end(body.toBuffer());
 
-    vertx.eventBus().send(LIST_ALL_TRANSPORTURI_ADDR,new JsonObject());
+        context.json(
+          new JsonObject()
+            .put("transporturi", body)
+        );
+
+      } else {
+        context.fail(reply.cause());
+      }
+    });
 
   }
 }
